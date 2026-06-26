@@ -3,6 +3,7 @@ import doubleClickZoom from '../lib/double_click_zoom';
 import * as Constants from '../constants';
 import isEventAtCoordinates from '../lib/is_event_at_coordinates';
 import createVertex from '../lib/create_vertex';
+import { snapEventToVertex } from '../lib/snap_to_vertex';
 
 const DrawPolygon = {};
 
@@ -33,13 +34,23 @@ DrawPolygon.onSetup = function() {
 };
 
 DrawPolygon.clickAnywhere = function(state, e) {
-  if (state.currentVertexPosition > 0 && isEventAtCoordinates(e, state.polygon.coordinates[0][state.currentVertexPosition - 1])) {
+  const snap = snapEventToVertex(this, e, {
+    excludeFeatureIds: [state.polygon.id]
+  });
+  const lng = snap ? snap.lng : e.lngLat.lng;
+  const lat = snap ? snap.lat : e.lngLat.lat;
+  const snappedEvent = {
+    lngLat: { lng, lat }
+  };
+
+  if (state.currentVertexPosition > 0 && isEventAtCoordinates(snappedEvent, state.polygon.coordinates[0][state.currentVertexPosition - 1]) ||
+      state.currentVertexPosition > 2 && isEventAtCoordinates(snappedEvent, state.polygon.coordinates[0][0])) {
     return this.changeMode(Constants.modes.SIMPLE_SELECT, { featureIds: [state.polygon.id] });
   }
   this.updateUIClasses({ mouse: Constants.cursors.ADD });
-  state.polygon.updateCoordinate(`0.${state.currentVertexPosition}`, e.lngLat.lng, e.lngLat.lat);
+  state.polygon.updateCoordinate(`0.${state.currentVertexPosition}`, lng, lat);
   state.currentVertexPosition++;
-  state.polygon.updateCoordinate(`0.${state.currentVertexPosition}`, e.lngLat.lng, e.lngLat.lat);
+  state.polygon.updateCoordinate(`0.${state.currentVertexPosition}`, lng, lat);
 };
 
 DrawPolygon.clickOnVertex = function(state) {
@@ -47,8 +58,13 @@ DrawPolygon.clickOnVertex = function(state) {
 };
 
 DrawPolygon.onMouseMove = function(state, e) {
-  state.polygon.updateCoordinate(`0.${state.currentVertexPosition}`, e.lngLat.lng, e.lngLat.lat);
-  if (CommonSelectors.isVertex(e)) {
+  const snap = snapEventToVertex(this, e, {
+    excludeFeatureIds: [state.polygon.id]
+  });
+  const lng = snap ? snap.lng : e.lngLat.lng;
+  const lat = snap ? snap.lat : e.lngLat.lat;
+  state.polygon.updateCoordinate(`0.${state.currentVertexPosition}`, lng, lat);
+  if (CommonSelectors.isVertex(e) || snap) {
     this.updateUIClasses({ mouse: Constants.cursors.POINTER });
   }
 };

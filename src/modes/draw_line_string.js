@@ -3,6 +3,7 @@ import isEventAtCoordinates from '../lib/is_event_at_coordinates';
 import doubleClickZoom from '../lib/double_click_zoom';
 import * as Constants from '../constants';
 import createVertex from '../lib/create_vertex';
+import { snapEventToVertex } from '../lib/snap_to_vertex';
 
 const DrawLineString = {};
 
@@ -69,17 +70,26 @@ DrawLineString.onSetup = function(opts) {
 };
 
 DrawLineString.clickAnywhere = function(state, e) {
-  if (state.currentVertexPosition > 0 && isEventAtCoordinates(e, state.line.coordinates[state.currentVertexPosition - 1]) ||
-      state.direction === 'backwards' && isEventAtCoordinates(e, state.line.coordinates[state.currentVertexPosition + 1])) {
+  const snap = snapEventToVertex(this, e, {
+    excludeFeatureIds: [state.line.id]
+  });
+  const lng = snap ? snap.lng : e.lngLat.lng;
+  const lat = snap ? snap.lat : e.lngLat.lat;
+  const snappedEvent = {
+    lngLat: { lng, lat }
+  };
+
+  if (state.currentVertexPosition > 0 && isEventAtCoordinates(snappedEvent, state.line.coordinates[state.currentVertexPosition - 1]) ||
+      state.direction === 'backwards' && isEventAtCoordinates(snappedEvent, state.line.coordinates[state.currentVertexPosition + 1])) {
     return this.changeMode(Constants.modes.SIMPLE_SELECT, { featureIds: [state.line.id] });
   }
   this.updateUIClasses({ mouse: Constants.cursors.ADD });
-  state.line.updateCoordinate(state.currentVertexPosition, e.lngLat.lng, e.lngLat.lat);
+  state.line.updateCoordinate(state.currentVertexPosition, lng, lat);
   if (state.direction === 'forward') {
     state.currentVertexPosition++;
-    state.line.updateCoordinate(state.currentVertexPosition, e.lngLat.lng, e.lngLat.lat);
+    state.line.updateCoordinate(state.currentVertexPosition, lng, lat);
   } else {
-    state.line.addCoordinate(0, e.lngLat.lng, e.lngLat.lat);
+    state.line.addCoordinate(0, lng, lat);
   }
 };
 
@@ -88,8 +98,13 @@ DrawLineString.clickOnVertex = function(state) {
 };
 
 DrawLineString.onMouseMove = function(state, e) {
-  state.line.updateCoordinate(state.currentVertexPosition, e.lngLat.lng, e.lngLat.lat);
-  if (CommonSelectors.isVertex(e)) {
+  const snap = snapEventToVertex(this, e, {
+    excludeFeatureIds: [state.line.id]
+  });
+  const lng = snap ? snap.lng : e.lngLat.lng;
+  const lat = snap ? snap.lat : e.lngLat.lat;
+  state.line.updateCoordinate(state.currentVertexPosition, lng, lat);
+  if (CommonSelectors.isVertex(e) || snap) {
     this.updateUIClasses({ mouse: Constants.cursors.POINTER });
   }
 };

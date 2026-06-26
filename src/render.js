@@ -51,6 +51,16 @@ export default function render() {
     features: store.sources.hot
   });
 
+  store.ctx.map.getSource(Constants.sources.REFERENCE).setData({
+    type: Constants.geojsonTypes.FEATURE_COLLECTION,
+    features: store.getReferenceFeatures().map(referenceInternal)
+  });
+
+  store.ctx.map.getSource(Constants.sources.REFERENCE_LABEL).setData({
+    type: Constants.geojsonTypes.FEATURE_COLLECTION,
+    features: store.getReferenceLabelFeatures().map(referenceLabelInternal)
+  });
+
   if (store._emitSelectionChange) {
     store.ctx.map.fire(Constants.events.SELECTION_CHANGE, {
       features: store.getSelected().map(feature => feature.toGeoJSON()),
@@ -83,4 +93,20 @@ export default function render() {
     store.isDirty = false;
     store.clearChangedIds();
   }
+}
+
+function referenceInternal(feature) {
+  const reference = JSON.parse(JSON.stringify(feature));
+  reference.properties = reference.properties || {};
+  reference.properties.meta = 'reference';
+  reference.properties.active = Constants.activeStates.INACTIVE;
+  return reference;
+}
+
+function referenceLabelInternal(feature) {
+  const referenceLabel = JSON.parse(JSON.stringify(feature));
+  referenceLabel.properties = referenceLabel.properties || {};
+  referenceLabel.properties.meta = 'reference-label';
+  referenceLabel.properties.active = Constants.activeStates.INACTIVE;
+  return referenceLabel;
 }

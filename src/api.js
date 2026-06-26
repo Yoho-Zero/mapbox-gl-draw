@@ -24,6 +24,20 @@ export default function(ctx, api) {
 
   api.modes = Constants.modes;
 
+  function normalizeReferenceFeatures(geojson) {
+    const featureCollection = JSON.parse(JSON.stringify(normalize(geojson)));
+    return featureCollection.features.map((feature) => {
+      feature.id = feature.id || hat();
+      if (feature.geometry === null) {
+        throw new Error('Invalid geometry: null');
+      }
+      if (featureTypes[feature.geometry.type] === undefined) {
+        throw new Error(`Invalid geometry type: ${feature.geometry.type}.`);
+      }
+      return feature;
+    });
+  }
+
   api.getFeatureIdsAt = function(point) {
     const features = featuresAt.click({ point }, null, ctx);
     return features.map(feature => feature.properties.id);
@@ -120,6 +134,30 @@ export default function(ctx, api) {
     return {
       type: Constants.geojsonTypes.FEATURE_COLLECTION,
       features: ctx.store.getAll().map(feature => feature.toGeoJSON())
+    };
+  };
+
+  api.setReferenceFeatures = function(geojson) {
+    const features = normalizeReferenceFeatures(geojson);
+    ctx.store.setReferenceFeatures(features);
+    return features.map(feature => feature.id);
+  };
+
+  api.addReferenceFeatures = function(geojson) {
+    const features = normalizeReferenceFeatures(geojson);
+    ctx.store.addReferenceFeatures(features);
+    return features.map(feature => feature.id);
+  };
+
+  api.clearReferenceFeatures = function() {
+    ctx.store.clearReferenceFeatures();
+    return api;
+  };
+
+  api.getReferenceFeatures = function() {
+    return {
+      type: Constants.geojsonTypes.FEATURE_COLLECTION,
+      features: ctx.store.getReferenceFeatures()
     };
   };
 

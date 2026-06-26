@@ -4,6 +4,7 @@ import constrainFeatureMovement from '../lib/constrain_feature_movement';
 import doubleClickZoom from '../lib/double_click_zoom';
 import * as Constants from '../constants';
 import moveFeatures from '../lib/move_features';
+import { snapCoordinateToVertex } from '../lib/snap_to_vertex';
 
 const isVertex = isOfMetaType(Constants.meta.VERTEX);
 const isMidpoint = isOfMetaType(Constants.meta.MIDPOINT);
@@ -88,9 +89,26 @@ DirectSelect.dragVertex = function(state, e, delta) {
   }));
 
   const constrainedDelta = constrainFeatureMovement(selectedCoordPoints, delta);
+  const excludeCoordinates = this.pathsToCoordinates(state.featureId, state.selectedCoordPaths);
+  let snapDelta = null;
   for (let i = 0; i < selectedCoords.length; i++) {
     const coord = selectedCoords[i];
-    state.feature.updateCoordinate(state.selectedCoordPaths[i], coord[0] + constrainedDelta.lng, coord[1] + constrainedDelta.lat);
+    const movedCoord = [coord[0] + constrainedDelta.lng, coord[1] + constrainedDelta.lat];
+    const snap = snapCoordinateToVertex(this, movedCoord, { excludeCoordinates });
+    if (snap) {
+      snapDelta = {
+        lng: snap.lng - movedCoord[0],
+        lat: snap.lat - movedCoord[1]
+      };
+      break;
+    }
+  }
+
+  for (let i = 0; i < selectedCoords.length; i++) {
+    const coord = selectedCoords[i];
+    const lng = coord[0] + constrainedDelta.lng + (snapDelta ? snapDelta.lng : 0);
+    const lat = coord[1] + constrainedDelta.lat + (snapDelta ? snapDelta.lat : 0);
+    state.feature.updateCoordinate(state.selectedCoordPaths[i], lng, lat);
   }
 };
 

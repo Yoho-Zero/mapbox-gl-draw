@@ -155,7 +155,7 @@ export default function(ctx) {
   events.data = function(event) {
     if (event.dataType === 'style') {
       const { setup, map, options, store } = ctx;
-      const hasLayers = options.styles.some(style => map.getLayer(style.id));
+      const hasLayers = options.styles.concat(options.referenceStyles).concat(options.referenceLabelStyles).some(style => map.getLayer(style.id));
       if (!hasLayers) {
         setup.addLayers();
         store.setDirty();

@@ -14,7 +14,7 @@ document.body.appendChild(container);
 const map = createMap({ container });
 const fireSpy = spy(map, 'fire');
 const afterNextRender = createAfterNextRender(map);
-const Draw = new MapboxDraw();
+const Draw = new MapboxDraw({ vertexSnapping: false });
 const onAdd = Draw.onAdd.bind(Draw);
 let controlGroup = null;
 Draw.onAdd = function(m) {

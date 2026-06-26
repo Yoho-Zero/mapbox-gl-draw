@@ -2,6 +2,7 @@ import toDenseArray from './lib/to_dense_array';
 import StringSet from './lib/string_set';
 import render from './render';
 import {interactions} from './constants';
+import createReferenceLabelFeatures from './lib/create_reference_label_features';
 
 export default function Store(ctx) {
   this._features = {};
@@ -11,6 +12,8 @@ export default function Store(ctx) {
   this._changedFeatureIds = new StringSet();
   this._deletedFeaturesToEmit = [];
   this._emitSelectionChange = false;
+  this._referenceFeatures = [];
+  this._referenceLabelFeatures = [];
   this._mapInitialConfig = {};
   this.ctx = ctx;
   this.sources = {
@@ -149,6 +152,35 @@ Store.prototype.get = function(id) {
  */
 Store.prototype.getAll = function() {
   return Object.keys(this._features).map(id => this._features[id]);
+};
+
+Store.prototype.setReferenceFeatures = function(features) {
+  this._referenceFeatures = JSON.parse(JSON.stringify(features));
+  this._referenceLabelFeatures = createReferenceLabelFeatures(this._referenceFeatures);
+  this.render();
+  return this;
+};
+
+Store.prototype.addReferenceFeatures = function(features) {
+  this._referenceFeatures = this._referenceFeatures.concat(JSON.parse(JSON.stringify(features)));
+  this._referenceLabelFeatures = createReferenceLabelFeatures(this._referenceFeatures);
+  this.render();
+  return this;
+};
+
+Store.prototype.clearReferenceFeatures = function() {
+  this._referenceFeatures = [];
+  this._referenceLabelFeatures = [];
+  this.render();
+  return this;
+};
+
+Store.prototype.getReferenceFeatures = function() {
+  return JSON.parse(JSON.stringify(this._referenceFeatures));
+};
+
+Store.prototype.getReferenceLabelFeatures = function() {
+  return JSON.parse(JSON.stringify(this._referenceLabelFeatures));
 };
 
 /**

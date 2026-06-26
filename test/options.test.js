@@ -14,10 +14,14 @@ test('Options test', (t) => {
       keybindings: true,
       clickBuffer: 2,
       touchBuffer: 25,
+      vertexSnapping: true,
+      vertexSnappingDistance: 10,
       displayControlsDefault: true,
       boxSelect: true,
       userProperties: false,
       styles: Draw.options.styles,
+      referenceStyles: Draw.options.referenceStyles,
+      referenceLabelStyles: Draw.options.referenceLabelStyles,
       controls: {
         point: true,
         line_string: true,
@@ -29,6 +33,11 @@ test('Options test', (t) => {
     };
     t.deepEquals(defaultOptions, Draw.options);
     t.deepEquals(styleWithSourcesFixture, Draw.options.styles);
+    t.deepEquals(Draw.options.referenceStyles[0].paint['fill-color'], ['coalesce', ['get', 'color'], '#6b7280']);
+    t.deepEquals(Draw.options.referenceStyles[1].paint['line-color'], ['coalesce', ['get', 'color'], '#6b7280']);
+    t.deepEquals(Draw.options.referenceStyles[3].paint['circle-color'], ['coalesce', ['get', 'color'], '#6b7280']);
+    t.deepEquals(Draw.options.referenceLabelStyles[0].layout['text-field'], ['get', 'name']);
+    t.deepEquals(Draw.options.referenceLabelStyles[0].paint['text-color'], ['coalesce', ['get', 'color'], '#111827']);
     t.end();
   });
 
@@ -41,9 +50,13 @@ test('Options test', (t) => {
       touchEnabled: true,
       clickBuffer: 10,
       touchBuffer: 25,
+      vertexSnapping: true,
+      vertexSnappingDistance: 10,
       boxSelect: true,
       displayControlsDefault: true,
       styles: Draw.options.styles,
+      referenceStyles: Draw.options.referenceStyles,
+      referenceLabelStyles: Draw.options.referenceLabelStyles,
       userProperties: false,
       controls: {
         point: true,
@@ -68,10 +81,14 @@ test('Options test', (t) => {
       touchEnabled: true,
       clickBuffer: 2,
       touchBuffer: 25,
+      vertexSnapping: true,
+      vertexSnappingDistance: 10,
       boxSelect: true,
       displayControlsDefault: false,
       userProperties: false,
       styles: Draw.options.styles,
+      referenceStyles: Draw.options.referenceStyles,
+      referenceLabelStyles: Draw.options.referenceLabelStyles,
       controls: {
         point: false,
         line_string: false,
@@ -95,9 +112,13 @@ test('Options test', (t) => {
       displayControlsDefault: false,
       clickBuffer: 2,
       touchBuffer: 25,
+      vertexSnapping: true,
+      vertexSnappingDistance: 10,
       boxSelect: true,
       userProperties: false,
       styles: Draw.options.styles,
+      referenceStyles: Draw.options.referenceStyles,
+      referenceLabelStyles: Draw.options.referenceLabelStyles,
       controls: {
         point: true,
         line_string: false,
@@ -122,9 +143,13 @@ test('Options test', (t) => {
       displayControlsDefault: true,
       touchBuffer: 25,
       clickBuffer: 2,
+      vertexSnapping: true,
+      vertexSnappingDistance: 10,
       userProperties: false,
       boxSelect: true,
       styles: Draw.options.styles,
+      referenceStyles: Draw.options.referenceStyles,
+      referenceLabelStyles: Draw.options.referenceLabelStyles,
       controls: {
         point: false,
         line_string: true,
@@ -148,10 +173,14 @@ test('Options test', (t) => {
       keybindings: true,
       clickBuffer: 2,
       touchBuffer: 25,
+      vertexSnapping: true,
+      vertexSnappingDistance: 10,
       displayControlsDefault: true,
       userProperties: false,
       boxSelect: true,
       styles: Draw.options.styles,
+      referenceStyles: Draw.options.referenceStyles,
+      referenceLabelStyles: Draw.options.referenceLabelStyles,
       controls: {
         point: true,
         line_string: true,

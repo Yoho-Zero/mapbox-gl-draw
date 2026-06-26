@@ -16,7 +16,9 @@ export const classes = {
 
 export const sources = {
   HOT: 'mapbox-gl-draw-hot',
-  COLD: 'mapbox-gl-draw-cold'
+  COLD: 'mapbox-gl-draw-cold',
+  REFERENCE: 'mapbox-gl-draw-reference',
+  REFERENCE_LABEL: 'mapbox-gl-draw-reference-label'
 };
 
 export const cursors = {

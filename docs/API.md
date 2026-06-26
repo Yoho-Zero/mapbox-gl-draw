@@ -30,9 +30,13 @@ All of the following options are optional.
 - `boxSelect`, boolean (default `true`): Whether or not to enable box selection of features with `shift`+`click`+drag. If `false`, `shift`+`click`+drag zooms into an area.
 - `clickBuffer`, number (default: `2`): Number of pixels around any feature or vertex (in every direction) that will respond to a click.
 - `touchBuffer`, number (default: `25`): Number of pixels around any feature of vertex (in every direction) that will respond to a touch.
+- `vertexSnapping`, boolean (default: `true`): Whether or not to snap line and polygon drawing/editing vertices to nearby existing vertices.
+- `vertexSnappingDistance`, number (default: `10`): Pixel distance used when `vertexSnapping` is enabled.
 - `controls`, Object: Hide or show individual controls. Each property's name is a control, and value is a boolean indicating whether the control is on or off. Available control names are `point`, `line_string`, `polygon`, `trash`, `combine_features` and `uncombine_features`. By default, all controls are on. To change that default, use `displayControlsDefault`.
 - `displayControlsDefault`, boolean (default: `true`): The default value for `controls`. For example, if you would like all controls to be *off* by default, and specify an allowed list with `controls`, use `displayControlsDefault: false`.
 - `styles`, Array\<Object\>: An array of map style objects. By default, Draw provides a map style for you. To learn about overriding styles, see the [Styling Draw](#styling-draw) section below.
+- `referenceStyles`, Array\<Object\>: An array of map style objects used to render read-only reference features. Reference feature layers are not queried by Draw interactions, but their vertices are available to vertex snapping.
+- `referenceLabelStyles`, Array\<Object\>: An array of map style objects used to render labels for named read-only Polygon and MultiPolygon reference features. Labels read `properties.name` and are rendered from generated point features inside the polygon.
 - `modes`, Object: over ride the default modes with your own. `MapboxDraw.modes` can be used to see the default values. More information on custom modes [can be found here](https://github.com/mapbox/mapbox-gl-draw/blob/main/docs/MODES.md).
 - `defaultMode`, String (default: `'simple_select'`): the mode (from `modes`) that user will first land in.
 - `userProperties`, boolean (default: `false`): properties of a feature will also be available for styling and prefixed with `user_`, e.g., `['==', 'user_custom_label', 'Example']`
@@ -201,6 +205,30 @@ console.log(draw.getAll());
 //   ]
 // }
 ```
+---
+
+### `setReferenceFeatures(geojson: Object) => Array<string>`
+
+Sets Draw's read-only reference features to the provided GeoJSON Feature, FeatureCollection, or Geometry. Reference features are rendered on a separate source, are ignored by selection/edit/delete interactions, and are used as vertex snapping candidates. Named Polygon and MultiPolygon reference features also render a read-only label from `properties.name`. Returns an array of reference feature ids.
+
+---
+
+### `addReferenceFeatures(geojson: Object) => Array<string>`
+
+Adds read-only reference features without replacing the current reference features. Named Polygon and MultiPolygon reference features also render a read-only label from `properties.name`. Returns an array of reference feature ids.
+
+---
+
+### `getReferenceFeatures(): FeatureCollection`
+
+Returns a FeatureCollection of all read-only reference features.
+
+---
+
+### `clearReferenceFeatures(): draw`
+
+Removes all read-only reference features. This does not affect editable Draw features.
+
 ---
 
 ### `delete(ids: string | Array<string>): draw`

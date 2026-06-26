@@ -43,6 +43,11 @@ test('Store constructor and public API', (t) => {
   t.equal(typeof Store.prototype.add, 'function', 'exposes store.add');
   t.equal(typeof Store.prototype.get, 'function', 'exposes store.get');
   t.equal(typeof Store.prototype.getAll, 'function', 'exposes store.getAll');
+  t.equal(typeof Store.prototype.setReferenceFeatures, 'function', 'exposes store.setReferenceFeatures');
+  t.equal(typeof Store.prototype.addReferenceFeatures, 'function', 'exposes store.addReferenceFeatures');
+  t.equal(typeof Store.prototype.clearReferenceFeatures, 'function', 'exposes store.clearReferenceFeatures');
+  t.equal(typeof Store.prototype.getReferenceFeatures, 'function', 'exposes store.getReferenceFeatures');
+  t.equal(typeof Store.prototype.getReferenceLabelFeatures, 'function', 'exposes store.getReferenceLabelFeatures');
   t.equal(typeof Store.prototype.select, 'function', 'exposes store.select');
   t.equal(typeof Store.prototype.deselect, 'function', 'exposes store.deselect');
   t.equal(typeof Store.prototype.clearSelected, 'function', 'exposes store.clearSelected');
@@ -59,7 +64,7 @@ test('Store constructor and public API', (t) => {
   t.equal(typeof Store.prototype.restoreMapConfig, 'function', 'exposes store.restoreMapConfig');
   t.equal(typeof Store.prototype.getInitialConfigValue, 'function', 'exposes store.getInitialConfigValue');
 
-  t.equal(getPublicMemberKeys(Store.prototype).length, 24, 'no untested prototype members');
+  t.equal(getPublicMemberKeys(Store.prototype).length, 29, 'no untested prototype members');
 
   t.end();
 });
@@ -126,6 +131,68 @@ test('Store#add, Store#get, Store#getAll', (t) => {
   t.equal(store.get(point.id), point);
   t.equal(store.get(line.id), line);
   t.deepEqual(store.getAll(), [point, line]);
+  t.end();
+});
+
+test('Store reference features', (t) => {
+  const store = createStore();
+  let numRenders = 0;
+  store.render = function() {
+    numRenders++;
+  };
+  const pointA = {
+    id: 'reference-a',
+    type: 'Feature',
+    properties: {},
+    geometry: {
+      type: 'Point',
+      coordinates: [1, 2]
+    }
+  };
+  const pointB = {
+    id: 'reference-b',
+    type: 'Feature',
+    properties: {},
+    geometry: {
+      type: 'Point',
+      coordinates: [3, 4]
+    }
+  };
+  const polygon = {
+    id: 'reference-polygon',
+    type: 'Feature',
+    properties: {
+      name: 'North District'
+    },
+    geometry: {
+      type: 'Polygon',
+      coordinates: [[
+        [0, 0],
+        [10, 0],
+        [10, 10],
+        [0, 10],
+        [0, 0]
+      ]]
+    }
+  };
+
+  store.setReferenceFeatures([pointA]);
+  t.deepEqual(store.getReferenceFeatures(), [pointA], 'sets reference features');
+  t.deepEqual(store.getReferenceLabelFeatures(), [], 'does not create labels for reference points');
+  t.equal(numRenders, 1, 'renders after setting reference features');
+
+  store.addReferenceFeatures([pointB, polygon]);
+  t.deepEqual(store.getReferenceFeatures(), [pointA, pointB, polygon], 'adds reference features');
+  t.equal(store.getReferenceLabelFeatures().length, 1, 'creates labels for named reference polygons');
+  t.deepEqual(store.getReferenceLabelFeatures()[0].geometry.coordinates, [5, 5], 'places simple polygon label at the visual center');
+  t.equal(store.getReferenceLabelFeatures()[0].properties.name, 'North District', 'copies label name from the reference feature');
+  t.equal(numRenders, 2, 'renders after adding reference features');
+
+  store.clearReferenceFeatures();
+  t.deepEqual(store.getReferenceFeatures(), [], 'clears reference features');
+  t.deepEqual(store.getReferenceLabelFeatures(), [], 'clears reference labels');
+  t.equal(numRenders, 3, 'renders after clearing reference features');
+
   t.end();
 });
 

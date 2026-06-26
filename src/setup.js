@@ -101,7 +101,31 @@ export default function(ctx) {
         type: 'geojson'
       });
 
+      ctx.map.addSource(Constants.sources.REFERENCE, {
+        data: {
+          type: Constants.geojsonTypes.FEATURE_COLLECTION,
+          features: []
+        },
+        type: 'geojson'
+      });
+
+      ctx.map.addSource(Constants.sources.REFERENCE_LABEL, {
+        data: {
+          type: Constants.geojsonTypes.FEATURE_COLLECTION,
+          features: []
+        },
+        type: 'geojson'
+      });
+
       ctx.options.styles.forEach((style) => {
+        ctx.map.addLayer(style);
+      });
+
+      ctx.options.referenceStyles.forEach((style) => {
+        ctx.map.addLayer(style);
+      });
+
+      ctx.options.referenceLabelStyles.forEach((style) => {
         ctx.map.addLayer(style);
       });
 
@@ -117,12 +141,32 @@ export default function(ctx) {
         }
       });
 
+      ctx.options.referenceStyles.forEach((style) => {
+        if (ctx.map.getLayer(style.id)) {
+          ctx.map.removeLayer(style.id);
+        }
+      });
+
+      ctx.options.referenceLabelStyles.forEach((style) => {
+        if (ctx.map.getLayer(style.id)) {
+          ctx.map.removeLayer(style.id);
+        }
+      });
+
       if (ctx.map.getSource(Constants.sources.COLD)) {
         ctx.map.removeSource(Constants.sources.COLD);
       }
 
       if (ctx.map.getSource(Constants.sources.HOT)) {
         ctx.map.removeSource(Constants.sources.HOT);
+      }
+
+      if (ctx.map.getSource(Constants.sources.REFERENCE)) {
+        ctx.map.removeSource(Constants.sources.REFERENCE);
+      }
+
+      if (ctx.map.getSource(Constants.sources.REFERENCE_LABEL)) {
+        ctx.map.removeSource(Constants.sources.REFERENCE_LABEL);
       }
     }
   };

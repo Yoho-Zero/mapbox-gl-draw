@@ -10,9 +10,80 @@ const defaultOptions = {
   touchEnabled: true,
   clickBuffer: 2,
   touchBuffer: 25,
+  vertexSnapping: true,
+  vertexSnappingDistance: 10,
   boxSelect: true,
   displayControlsDefault: true,
   styles,
+  referenceStyles: [
+    {
+      'id': 'gl-draw-reference-polygon-fill',
+      'type': 'fill',
+      'filter': ['all', ['==', '$type', 'Polygon']],
+      'paint': {
+        'fill-color': ['coalesce', ['get', 'color'], '#6b7280'],
+        'fill-opacity': 0.2
+      }
+    },
+    {
+      'id': 'gl-draw-reference-polygon-stroke',
+      'type': 'line',
+      'filter': ['all', ['==', '$type', 'Polygon']],
+      'layout': {
+        'line-cap': 'round',
+        'line-join': 'round'
+      },
+      'paint': {
+        'line-color': ['coalesce', ['get', 'color'], '#6b7280'],
+        'line-width': 1,
+        'line-dasharray': [2, 2]
+      }
+    },
+    {
+      'id': 'gl-draw-reference-line',
+      'type': 'line',
+      'filter': ['all', ['==', '$type', 'LineString']],
+      'layout': {
+        'line-cap': 'round',
+        'line-join': 'round'
+      },
+      'paint': {
+        'line-color': ['coalesce', ['get', 'color'], '#6b7280'],
+        'line-width': 1,
+        'line-dasharray': [2, 2]
+      }
+    },
+    {
+      'id': 'gl-draw-reference-point',
+      'type': 'circle',
+      'filter': ['all', ['==', '$type', 'Point']],
+      'paint': {
+        'circle-radius': 4,
+        'circle-color': ['coalesce', ['get', 'color'], '#6b7280'],
+        'circle-stroke-color': '#ffffff',
+        'circle-stroke-width': 1
+      }
+    }
+  ],
+  referenceLabelStyles: [
+    {
+      'id': 'gl-draw-reference-label',
+      'type': 'symbol',
+      'filter': ['all', ['==', '$type', 'Point']],
+      'layout': {
+        'text-field': ['get', 'name'],
+        'text-size': 12,
+        'text-anchor': 'center',
+        'text-allow-overlap': false,
+        'text-ignore-placement': false
+      },
+      'paint': {
+        'text-color': ['coalesce', ['get', 'color'], '#111827'],
+        'text-halo-color': '#ffffff',
+        'text-halo-width': 1.5
+      }
+    }
+  ],
   modes,
   controls: {},
   userProperties: false
@@ -39,9 +110,13 @@ const hideControls = {
 function addSources(styles, sourceBucket) {
   return styles.map((style) => {
     if (style.source) return style;
+    let source = Constants.sources.COLD;
+    if (sourceBucket === 'hot') source = Constants.sources.HOT;
+    else if (sourceBucket === 'reference') source = Constants.sources.REFERENCE;
+    else if (sourceBucket === 'reference-label') source = Constants.sources.REFERENCE_LABEL;
     return xtend(style, {
       id: `${style.id}.${sourceBucket}`,
-      source: (sourceBucket === 'hot') ? Constants.sources.HOT : Constants.sources.COLD
+      source
     });
   });
 }
@@ -63,6 +138,8 @@ export default function(options = {}) {
 
   // Layers with a shared source should be adjacent for performance reasons
   withDefaults.styles = addSources(withDefaults.styles, 'cold').concat(addSources(withDefaults.styles, 'hot'));
+  withDefaults.referenceStyles = addSources(withDefaults.referenceStyles, 'reference');
+  withDefaults.referenceLabelStyles = addSources(withDefaults.referenceLabelStyles, 'reference-label');
 
   return withDefaults;
 }
