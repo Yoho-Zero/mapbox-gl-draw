@@ -3,6 +3,7 @@ import test from 'tape';
 import MapboxDraw from '../index';
 import modes from '../src/modes/index';
 import styleWithSourcesFixture from './fixtures/style_with_sources.json';
+import createMap from './utils/create_map';
 
 test('Options test', (t) => {
   t.test('no options', (t) => {
@@ -18,6 +19,7 @@ test('Options test', (t) => {
       vertexSnappingDistance: 10,
       displayControlsDefault: true,
       boxSelect: true,
+      beforeId: undefined,
       userProperties: false,
       styles: Draw.options.styles,
       referenceStyles: Draw.options.referenceStyles,
@@ -54,6 +56,7 @@ test('Options test', (t) => {
       vertexSnappingDistance: 10,
       boxSelect: true,
       displayControlsDefault: true,
+      beforeId: undefined,
       styles: Draw.options.styles,
       referenceStyles: Draw.options.referenceStyles,
       referenceLabelStyles: Draw.options.referenceLabelStyles,
@@ -85,6 +88,7 @@ test('Options test', (t) => {
       vertexSnappingDistance: 10,
       boxSelect: true,
       displayControlsDefault: false,
+      beforeId: undefined,
       userProperties: false,
       styles: Draw.options.styles,
       referenceStyles: Draw.options.referenceStyles,
@@ -115,6 +119,7 @@ test('Options test', (t) => {
       vertexSnapping: true,
       vertexSnappingDistance: 10,
       boxSelect: true,
+      beforeId: undefined,
       userProperties: false,
       styles: Draw.options.styles,
       referenceStyles: Draw.options.referenceStyles,
@@ -147,6 +152,7 @@ test('Options test', (t) => {
       vertexSnappingDistance: 10,
       userProperties: false,
       boxSelect: true,
+      beforeId: undefined,
       styles: Draw.options.styles,
       referenceStyles: Draw.options.referenceStyles,
       referenceLabelStyles: Draw.options.referenceLabelStyles,
@@ -178,6 +184,7 @@ test('Options test', (t) => {
       displayControlsDefault: true,
       userProperties: false,
       boxSelect: true,
+      beforeId: undefined,
       styles: Draw.options.styles,
       referenceStyles: Draw.options.referenceStyles,
       referenceLabelStyles: Draw.options.referenceLabelStyles,
@@ -252,6 +259,21 @@ test('Options test', (t) => {
     ];
 
     t.deepEquals(styles, Draw.options.styles);
+    t.end();
+  });
+
+  t.test('use beforeId', (t) => {
+    const map = createMap();
+    const Draw = new MapboxDraw({ beforeId: 'target-layer' });
+    map.addControl(Draw);
+
+    const expectedLayerCount = Draw.options.styles.length +
+      Draw.options.referenceStyles.length +
+      Draw.options.referenceLabelStyles.length;
+
+    t.equals(Draw.options.beforeId, 'target-layer');
+    t.equals(map.addLayerCalls.length, expectedLayerCount, 'adds all Draw-managed layers');
+    t.ok(map.addLayerCalls.every(call => call.beforeId === 'target-layer'), 'passes beforeId to every Draw-managed layer');
     t.end();
   });
 

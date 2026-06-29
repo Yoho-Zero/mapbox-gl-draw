@@ -118,15 +118,15 @@ export default function(ctx) {
       });
 
       ctx.options.styles.forEach((style) => {
-        ctx.map.addLayer(style);
+        ctx.map.addLayer(style, ctx.options.beforeId);
       });
 
       ctx.options.referenceStyles.forEach((style) => {
-        ctx.map.addLayer(style);
+        ctx.map.addLayer(style, ctx.options.beforeId);
       });
 
       ctx.options.referenceLabelStyles.forEach((style) => {
-        ctx.map.addLayer(style);
+        ctx.map.addLayer(style, ctx.options.beforeId);
       });
 
       ctx.store.setDirty(true);

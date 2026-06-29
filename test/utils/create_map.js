@@ -7,6 +7,7 @@ class MockMap extends Evented {
     super();
 
     this.sources = {};
+    this.addLayerCalls = [];
     this.style = {
       _layers: {},
       getLayer: id => this.style._layers[id],
@@ -69,7 +70,9 @@ class MockMap extends Evented {
     };
   }
 
-  addLayer() {}
+  addLayer(layer, beforeId) {
+    this.addLayerCalls.push({ layer, beforeId });
+  }
 
   project(lngLat) {
     return {

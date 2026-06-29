@@ -34,6 +34,7 @@ All of the following options are optional.
 - `vertexSnappingDistance`, number (default: `10`): Pixel distance used when `vertexSnapping` is enabled.
 - `controls`, Object: Hide or show individual controls. Each property's name is a control, and value is a boolean indicating whether the control is on or off. Available control names are `point`, `line_string`, `polygon`, `trash`, `combine_features` and `uncombine_features`. By default, all controls are on. To change that default, use `displayControlsDefault`.
 - `displayControlsDefault`, boolean (default: `true`): The default value for `controls`. For example, if you would like all controls to be *off* by default, and specify an allowed list with `controls`, use `displayControlsDefault: false`.
+- `beforeId`, string: The id of an existing map layer before which Draw-managed layers should be inserted.
 - `styles`, Array\<Object\>: An array of map style objects. By default, Draw provides a map style for you. To learn about overriding styles, see the [Styling Draw](#styling-draw) section below.
 - `referenceStyles`, Array\<Object\>: An array of map style objects used to render read-only reference features. Reference feature layers are not queried by Draw interactions, but their vertices are available to vertex snapping.
 - `referenceLabelStyles`, Array\<Object\>: An array of map style objects used to render labels for named read-only Polygon and MultiPolygon reference features. Labels read `properties.name` and are rendered from generated point features inside the polygon.

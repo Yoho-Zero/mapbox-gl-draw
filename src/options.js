@@ -14,6 +14,7 @@ const defaultOptions = {
   vertexSnappingDistance: 10,
   boxSelect: true,
   displayControlsDefault: true,
+  beforeId: undefined,
   styles,
   referenceStyles: [
     {
