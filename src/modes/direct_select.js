@@ -13,6 +13,59 @@ const DirectSelect = {};
 
 // INTERNAL FUCNTIONS
 
+function isRectangleFeature(feature) {
+  return feature.type === Constants.geojsonTypes.POLYGON &&
+    feature.properties &&
+    feature.properties[Constants.properties.SHAPE] === Constants.types.RECTANGLE &&
+    feature.coordinates.length === 1 &&
+    feature.coordinates[0].length === 4;
+}
+
+function isShapeLockedFeature(feature) {
+  return isRectangleFeature(feature);
+}
+
+function getRectangleVertexIndex(coordPath) {
+  const parts = coordPath.split('.');
+  if (parts.length !== 2 || parts[0] !== '0') return null;
+
+  const index = parseInt(parts[1], 10);
+  if (index < 0 || index > 3) return null;
+
+  return index;
+}
+
+function updateRectangleCoordinate(feature, coordPath, lng, lat) {
+  const index = getRectangleVertexIndex(coordPath);
+  if (index === null) return false;
+
+  const opposite = feature.coordinates[0][(index + 2) % 4];
+
+  if (index === 0) {
+    feature.updateCoordinate('0.0', lng, lat);
+    feature.updateCoordinate('0.1', opposite[0], lat);
+    feature.updateCoordinate('0.2', opposite[0], opposite[1]);
+    feature.updateCoordinate('0.3', lng, opposite[1]);
+  } else if (index === 1) {
+    feature.updateCoordinate('0.0', opposite[0], lat);
+    feature.updateCoordinate('0.1', lng, lat);
+    feature.updateCoordinate('0.2', lng, opposite[1]);
+    feature.updateCoordinate('0.3', opposite[0], opposite[1]);
+  } else if (index === 2) {
+    feature.updateCoordinate('0.0', opposite[0], opposite[1]);
+    feature.updateCoordinate('0.1', lng, opposite[1]);
+    feature.updateCoordinate('0.2', lng, lat);
+    feature.updateCoordinate('0.3', opposite[0], lat);
+  } else {
+    feature.updateCoordinate('0.0', lng, opposite[1]);
+    feature.updateCoordinate('0.1', opposite[0], opposite[1]);
+    feature.updateCoordinate('0.2', opposite[0], lat);
+    feature.updateCoordinate('0.3', lng, lat);
+  }
+
+  return true;
+}
+
 DirectSelect.fireUpdate = function() {
   this.map.fire(Constants.events.UPDATE, {
     action: Constants.updateActions.CHANGE_COORDINATES,
@@ -24,7 +77,7 @@ DirectSelect.fireActionable = function(state) {
   this.setActionableState({
     combineFeatures: false,
     uncombineFeatures: false,
-    trash: state.selectedCoordPaths.length > 0
+    trash: state.selectedCoordPaths.length > 0 && !isShapeLockedFeature(state.feature)
   });
 };
 
@@ -45,7 +98,10 @@ DirectSelect.onVertex = function (state, e) {
   this.startDragging(state, e);
   const about = e.featureTarget.properties;
   const selectedIndex = state.selectedCoordPaths.indexOf(about.coord_path);
-  if (!isShiftDown(e) && selectedIndex === -1) {
+
+  if (isShapeLockedFeature(state.feature)) {
+    state.selectedCoordPaths = [about.coord_path];
+  } else if (!isShiftDown(e) && selectedIndex === -1) {
     state.selectedCoordPaths = [about.coord_path];
   } else if (isShiftDown(e) && selectedIndex === -1) {
     state.selectedCoordPaths.push(about.coord_path);
@@ -56,6 +112,8 @@ DirectSelect.onVertex = function (state, e) {
 };
 
 DirectSelect.onMidpoint = function(state, e) {
+  if (isShapeLockedFeature(state.feature)) return;
+
   this.startDragging(state, e);
   const about = e.featureTarget.properties;
   state.feature.addCoordinate(about.coord_path, about.lng, about.lat);
@@ -108,6 +166,12 @@ DirectSelect.dragVertex = function(state, e, delta) {
     const coord = selectedCoords[i];
     const lng = coord[0] + constrainedDelta.lng + (snapDelta ? snapDelta.lng : 0);
     const lat = coord[1] + constrainedDelta.lat + (snapDelta ? snapDelta.lat : 0);
+
+    if (isRectangleFeature(state.feature)) {
+      updateRectangleCoordinate(state.feature, state.selectedCoordPaths[i], lng, lat);
+      return;
+    }
+
     state.feature.updateCoordinate(state.selectedCoordPaths[i], lng, lat);
   }
 };
@@ -171,7 +235,7 @@ DirectSelect.toDisplayFeatures = function(state, geojson, push) {
     push(geojson);
     createSupplementaryPoints(geojson, {
       map: this.map,
-      midpoints: true,
+      midpoints: !isShapeLockedFeature(state.feature),
       selectedPaths: state.selectedCoordPaths
     }).forEach(push);
   } else {
@@ -182,6 +246,13 @@ DirectSelect.toDisplayFeatures = function(state, geojson, push) {
 };
 
 DirectSelect.onTrash = function(state) {
+  if (isShapeLockedFeature(state.feature)) {
+    state.selectedCoordPaths = [];
+    this.clearSelectedCoordinates();
+    this.fireActionable(state);
+    return;
+  }
+
   // Uses number-aware sorting to make sure '9' < '10'. Comparison is reversed because we want them
   // in reverse order so that we can remove by index safely.
   state.selectedCoordPaths

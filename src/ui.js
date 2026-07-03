@@ -125,6 +125,16 @@ export default function(ctx) {
       });
     }
 
+    if (controls[Constants.types.RECTANGLE]) {
+      buttonElements[Constants.types.RECTANGLE] = createControlButton(Constants.types.RECTANGLE, {
+        container: controlGroup,
+        className: Constants.classes.CONTROL_BUTTON_RECTANGLE,
+        title: `Rectangle tool ${ctx.options.keybindings ? '(r)' : ''}`,
+        onActivate: () => ctx.events.changeMode(Constants.modes.DRAW_RECTANGLE),
+        onDeactivate: () => ctx.events.trash()
+      });
+    }
+
     if (controls[Constants.types.POINT]) {
       buttonElements[Constants.types.POINT] = createControlButton(Constants.types.POINT, {
         container: controlGroup,

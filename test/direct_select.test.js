@@ -273,6 +273,54 @@ test('direct_select', (t) => {
     });
   });
 
+  t.test('direct_select - dragging a rectangle vertex preserves rectangle shape', (st) => {
+    const rectangle = {
+      type: 'Feature',
+      properties: {
+        [Constants.properties.SHAPE]: Constants.types.RECTANGLE
+      },
+      geometry: {
+        type: Constants.geojsonTypes.POLYGON,
+        coordinates: [[
+          [0, 0],
+          [10, 0],
+          [10, 20],
+          [0, 20],
+          [0, 0]
+        ]]
+      }
+    };
+    const [rectangleId] = Draw.add(rectangle);
+    Draw.changeMode(Constants.modes.DIRECT_SELECT, {
+      featureId: rectangleId
+    });
+
+    afterNextRender(() => {
+      map.fire.resetHistory();
+      click(map, makeMouseEvent(0, 0));
+
+      afterNextRender(() => {
+        map.fire.resetHistory();
+        map.fire('mousedown', makeMouseEvent(0, 0));
+        map.fire('mousemove', makeMouseEvent(-15, -15, { buttons: 1 }));
+        map.fire('mouseup', makeMouseEvent(-15, -15));
+
+        const afterMove = Draw.get(rectangleId);
+        const args = getFireArgs().filter(arg => arg[0] === 'draw.update');
+        st.equal(args.length, 1, 'draw.update called once');
+        st.deepEqual(afterMove.geometry.coordinates, [[
+          [-15, -15],
+          [10, -15],
+          [10, 20],
+          [-15, 20],
+          [-15, -15]
+        ]], 'rectangle remains axis-aligned after dragging one corner');
+
+        cleanUp(() => st.end());
+      });
+    });
+  });
+
   document.body.removeChild(mapContainer);
   t.end();
 });

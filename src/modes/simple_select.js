@@ -171,10 +171,11 @@ SimpleSelect.clickOnFeature = function(state, e) {
   const isShiftClick = CommonSelectors.isShiftDown(e);
   const selectedFeatureIds = this.getSelectedIds();
   const featureId = e.featureTarget.properties.id;
+  const feature = this.getFeature(featureId);
   const isFeatureSelected = this.isSelected(featureId);
 
   // Click (without shift) on any selected feature but a point
-  if (!isShiftClick && isFeatureSelected && this.getFeature(featureId).type !== Constants.geojsonTypes.POINT) {
+  if (!isShiftClick && isFeatureSelected && feature.type !== Constants.geojsonTypes.POINT) {
     // Enter direct select mode
     return this.changeMode(Constants.modes.DIRECT_SELECT, {
       featureId

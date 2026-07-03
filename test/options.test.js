@@ -28,6 +28,7 @@ test('Options test', (t) => {
         point: true,
         line_string: true,
         polygon: true,
+        rectangle: true,
         trash: true,
         combine_features: true,
         uncombine_features: true
@@ -65,6 +66,7 @@ test('Options test', (t) => {
         point: true,
         line_string: true,
         polygon: true,
+        rectangle: true,
         trash: true,
         combine_features: true,
         uncombine_features: true
@@ -97,6 +99,7 @@ test('Options test', (t) => {
         point: false,
         line_string: false,
         polygon: false,
+        rectangle: false,
         trash: false,
         combine_features: false,
         uncombine_features: false
@@ -128,6 +131,7 @@ test('Options test', (t) => {
         point: true,
         line_string: false,
         polygon: false,
+        rectangle: false,
         trash: false,
         combine_features: false,
         uncombine_features: false
@@ -160,6 +164,7 @@ test('Options test', (t) => {
         point: false,
         line_string: true,
         polygon: true,
+        rectangle: true,
         trash: true,
         combine_features: true,
         uncombine_features: true
@@ -192,6 +197,7 @@ test('Options test', (t) => {
         point: true,
         line_string: true,
         polygon: true,
+        rectangle: true,
         trash: true,
         combine_features: true,
         uncombine_features: true

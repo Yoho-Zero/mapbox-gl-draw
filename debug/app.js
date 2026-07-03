@@ -34,73 +34,11 @@ map.addControl(new MapboxGeocoder({
 
 map.addControl(new mapboxgl.NavigationControl(), 'top-left');
 
-const DRAW_BEFORE_ID_SOURCE = 'draw-before-id-test-source';
-const DRAW_BEFORE_ID = 'draw-before-id-test-layer';
-
-function ensureDrawBeforeIdLayer() {
-  if (!map.getSource(DRAW_BEFORE_ID_SOURCE)) {
-    map.addSource(DRAW_BEFORE_ID_SOURCE, {
-      type: 'geojson',
-      data: {
-        type: 'Feature',
-        properties: {},
-        geometry: {
-          type: 'Polygon',
-          coordinates: [[
-            [121.32, 31.02],
-            [121.56, 31.02],
-            [121.56, 31.25],
-            [121.32, 31.25],
-            [121.32, 31.02]
-          ]]
-        }
-      }
-    });
-  }
-
-  if (!map.getLayer(DRAW_BEFORE_ID)) {
-    map.addLayer({
-      id: DRAW_BEFORE_ID,
-      type: 'fill',
-      source: DRAW_BEFORE_ID_SOURCE,
-      paint: {
-        'fill-color': '#111827',
-        'fill-opacity': 0.28
-      }
-    });
-  }
-}
-
-function logDrawBeforeIdLayerOrder(draw) {
-  const style = map.getStyle();
-  if (!style || !style.layers) return;
-
-  const layerIds = style.layers.map(layer => layer.id);
-  const beforeIndex = layerIds.indexOf(DRAW_BEFORE_ID);
-  const drawLayerIds = draw.options.styles
-    .concat(draw.options.referenceStyles)
-    .concat(draw.options.referenceLabelStyles)
-    .map(styleLayer => styleLayer.id);
-  const drawLayerIndexes = drawLayerIds
-    .map(id => ({ id, index: layerIds.indexOf(id) }))
-    .filter(layer => layer.index !== -1);
-
-  // eslint-disable-next-line no-console
-  console.table({
-    beforeId: DRAW_BEFORE_ID,
-    beforeIndex,
-    drawLayerCount: drawLayerIndexes.length,
-    drawLayersBeforeTarget: drawLayerIndexes.every(layer => layer.index < beforeIndex)
-  });
-}
-
 const modes = MapboxDraw.modes;
 modes.static = StaticMode;
 const Draw = window.Draw = new MapboxDraw({
   modes,
-  beforeId: DRAW_BEFORE_ID
 });
-let drawIsActive = false;
 let referenceFeatureCollection = null;
 
 function seedReferenceFeatures() {
@@ -110,116 +48,7 @@ function seedReferenceFeatures() {
 }
 
 map.on('load', () => {
-  ensureDrawBeforeIdLayer();
-  drawIsActive = true;
   map.addControl(Draw, 'bottom-right');
-  map.on('draw.render', () => logDrawBeforeIdLayerOrder(Draw));
-
-  // Add Draw to the map if it is inactive
-  const addButton = document.getElementById('addBtn');
-  addButton.onclick = function () {
-    if (drawIsActive) return;
-    ensureDrawBeforeIdLayer();
-    drawIsActive = true;
-    map.addControl(Draw, 'bottom-right');
-    seedReferenceFeatures();
-    logDrawBeforeIdLayerOrder(Draw);
-  };
-
-  // Remove draw from the map if it is active
-  const removeButton = document.getElementById('removeBtn');
-  removeButton.onclick = function () {
-    if (!drawIsActive) return;
-    drawIsActive = false;
-    map.removeControl(Draw);
-  };
-
-  // Toggle the style between dark and streets
-  const flipStyleButton = document.getElementById('flipStyleBtn');
-  let currentStyle = 'streets-v9';
-  flipStyleButton.onclick = function () {
-    const shouldRestoreDraw = drawIsActive;
-    if (drawIsActive) {
-      drawIsActive = false;
-      map.removeControl(Draw);
-    }
-
-    const style = currentStyle === 'streets-v9' ? 'dark-v9' : 'streets-v9';
-    map.setStyle(`mapbox://styles/mapbox/${style}`);
-    currentStyle = style;
-
-    map.once('style.load', () => {
-      ensureDrawBeforeIdLayer();
-      if (shouldRestoreDraw) {
-        drawIsActive = true;
-        map.addControl(Draw, 'bottom-right');
-        seedReferenceFeatures();
-        logDrawBeforeIdLayerOrder(Draw);
-      }
-    });
-  };
-
-  // toggle double click zoom
-  const doubleClickZoom = document.getElementById('doubleClickZoom');
-  let doubleClickZoomOn = true;
-  doubleClickZoom.onclick = function () {
-    if (doubleClickZoomOn) {
-      doubleClickZoomOn = false;
-      map.doubleClickZoom.disable();
-      doubleClickZoom.innerText = 'enable dblclick zoom';
-    } else {
-      map.doubleClickZoom.enable();
-      doubleClickZoomOn = true;
-      doubleClickZoom.innerText = 'disable dblclick zoom';
-    }
-  };
-
-  // Jump into draw point mode via a custom UI element
-  const startPoint = document.getElementById('start-point');
-  startPoint.onclick = function () {
-    Draw.changeMode('draw_point');
-  };
-
-  // Jump into draw line mode via a custom UI element
-  const startLine = document.getElementById('start-line');
-  startLine.onclick = function () {
-    Draw.changeMode('draw_line_string');
-  };
-
-  // Jump into draw polygon mode via a custom UI element
-  const startPolygon = document.getElementById('start-polygon');
-  startPolygon.onclick = function () {
-    Draw.changeMode('draw_polygon');
-  };
-
-  // Jump into static mode via a custom UI element
-  const startStatic = document.getElementById('start-static');
-  startStatic.onclick = function () {
-    Draw.changeMode('static');
-  };
-
-  // const featureCollection = {
-  //   "type": "FeatureCollection",
-  //   "features": [
-  //     {
-  //       "type": "Feature",
-  //       properties: { name: '感知圈', color: '#ee6666' },
-  //       "geometry": {
-  //         "type": "Polygon",
-  //         "coordinates": [
-  //           [
-  //             [116.356449, 39.859008],
-  //             [116.607389, 39.859008],
-  //             [116.607389, 39.913008],
-  //             [116.356449, 39.913008],
-  //             [116.356449, 39.859008]
-  //           ]
-  //         ]
-  //       }
-  //     },
-  //   ]
-  // };
-
   referenceFeatureCollection = {
     "type": "FeatureCollection",
     "features": [
@@ -14594,6 +14423,5 @@ map.on('load', () => {
     ]
   };
   seedReferenceFeatures();
-  logDrawBeforeIdLayerOrder(Draw);
 });
 

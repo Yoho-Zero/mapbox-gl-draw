@@ -347,6 +347,12 @@ test('Draw.changeMode and Draw.getMode with no pre-existing feature', (t) => {
   t.equals(Draw.getAll().features[0].geometry.type, 'Point', 'and it is a point');
   t.deepEquals(Draw.getAll().features[0].geometry.coordinates, [], 'and it is empty');
 
+  Draw.changeMode('draw_rectangle');
+  t.equals(Draw.getMode(), 'draw_rectangle', 'changed to draw_rectangle');
+  t.equals(Draw.getAll().features.length, 1, 'still only one feature added');
+  t.equals(Draw.getAll().features[0].geometry.type, 'Polygon', 'and it is a rectangle polygon');
+  t.deepEquals(Draw.getAll().features[0].geometry.coordinates, [[null]], 'and it is empty');
+
   Draw.changeMode('simple_select');
   t.equals(Draw.getMode(), 'simple_select', 'changed to simple_select');
   t.equals(Draw.getAll().features.length, 0, 'no features added');
@@ -403,8 +409,9 @@ test('Draw.modes', (t) => {
   t.equal(Draw.modes.DRAW_POINT, Constants.modes.DRAW_POINT, 'draw_point');
   t.equal(Draw.modes.DRAW_LINE_STRING, Constants.modes.DRAW_LINE_STRING, 'draw_line_string');
   t.equal(Draw.modes.DRAW_POLYGON, Constants.modes.DRAW_POLYGON, 'draw_polygon');
+  t.equal(Draw.modes.DRAW_RECTANGLE, Constants.modes.DRAW_RECTANGLE, 'draw_rectangle');
   t.equal(Draw.modes.STATIC, Constants.modes.STATIC, 'static');
-  t.equal(getPublicMemberKeys(Draw.modes).length, 6, 'no unexpected modes');
+  t.equal(getPublicMemberKeys(Draw.modes).length, 7, 'no unexpected modes');
   t.end();
 });
 
