@@ -12,6 +12,8 @@ import makeMouseEvent from './utils/make_mouse_event';
 import makeTouchEvent from './utils/make_touch_event';
 import * as Constants from '../src/constants';
 import createSyntheticEvent from 'synthetic-dom-events';
+import { createCircle } from '../src/lib/circle_geojson';
+import { destinationPoint, distance } from '../src/lib/geodesy';
 
 test('direct_select', (t) => {
 
@@ -315,6 +317,47 @@ test('direct_select', (t) => {
           [-15, 20],
           [-15, -15]
         ]], 'rectangle remains axis-aligned after dragging one corner');
+
+        cleanUp(() => st.end());
+      });
+    });
+  });
+
+  t.test('direct_select - dragging a circle radius handle updates radius', (st) => {
+    const center = [0, 0];
+    const initialRadius = distance(center, [10, 0]);
+    const handle = destinationPoint(center, initialRadius, 45);
+    const [circleId] = Draw.add(createCircle(center, initialRadius));
+
+    Draw.changeMode(Constants.modes.DIRECT_SELECT, {
+      featureId: circleId
+    });
+
+    afterNextRender(() => {
+      const renderedFeatures = map.sources[Constants.sources.COLD].data.features.concat(map.sources[Constants.sources.HOT].data.features);
+      const circle = renderedFeatures.find(feature => feature.properties.id === circleId);
+      const vertexPoints = renderedFeatures.filter(feature => feature.properties.parent === circleId);
+
+      st.equal(circle.geometry.coordinates[0].length, 129, 'renders a 128 segment geodesic circle');
+      st.equal(vertexPoints.length, 2, 'renders center and radius handles');
+      st.equal(vertexPoints[0].properties.coord_path, '0.0', 'renders center handle');
+      st.equal(vertexPoints[1].properties.coord_path, '0.1', 'renders radius handle');
+
+      map.fire.resetHistory();
+      click(map, makeMouseEvent(handle[0], handle[1]));
+
+      afterNextRender(() => {
+        map.fire.resetHistory();
+        map.fire('mousedown', makeMouseEvent(handle[0], handle[1]));
+        map.fire('mousemove', makeMouseEvent(20, 0, { buttons: 1 }));
+        map.fire('mouseup', makeMouseEvent(20, 0));
+
+        const afterMove = Draw.get(circleId);
+        const expectedRadius = distance(center, [20, 0]);
+        const args = getFireArgs().filter(arg => arg[0] === 'draw.update');
+
+        st.equal(args.length, 1, 'draw.update called once');
+        st.equal(Math.abs(afterMove.properties[Constants.properties.CIRCLE_RADIUS] - expectedRadius) < 1e-9, true, 'updates the geodesic radius');
 
         cleanUp(() => st.end());
       });

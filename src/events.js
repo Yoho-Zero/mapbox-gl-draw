@@ -141,6 +141,8 @@ export default function(ctx) {
       changeMode(Constants.modes.DRAW_POLYGON);
     } else if (event.keyCode === 52 && ctx.options.controls.rectangle) {
       changeMode(Constants.modes.DRAW_RECTANGLE);
+    } else if (event.keyCode === 53 && ctx.options.controls.circle) {
+      changeMode(Constants.modes.DRAW_CIRCLE);
     }
   };
 

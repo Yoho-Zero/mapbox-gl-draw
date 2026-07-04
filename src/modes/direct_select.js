@@ -5,6 +5,9 @@ import doubleClickZoom from '../lib/double_click_zoom';
 import * as Constants from '../constants';
 import moveFeatures from '../lib/move_features';
 import { snapCoordinateToVertex } from '../lib/snap_to_vertex';
+import { getCircleCenter, isCircleFeature } from '../lib/circle_geojson';
+import { distance, initialBearing } from '../lib/geodesy';
+import createCircleDisplayFeatures from '../lib/create_circle_display_features';
 
 const isVertex = isOfMetaType(Constants.meta.VERTEX);
 const isMidpoint = isOfMetaType(Constants.meta.MIDPOINT);
@@ -22,7 +25,7 @@ function isRectangleFeature(feature) {
 }
 
 function isShapeLockedFeature(feature) {
-  return isRectangleFeature(feature);
+  return isRectangleFeature(feature) || isCircleFeature(feature);
 }
 
 function getRectangleVertexIndex(coordPath) {
@@ -64,6 +67,22 @@ function updateRectangleCoordinate(feature, coordPath, lng, lat) {
   }
 
   return true;
+}
+
+function updateCircleCoordinate(ctx, state, e) {
+  const geojson = state.feature.toGeoJSON();
+  const center = getCircleCenter(geojson);
+  const snap = snapCoordinateToVertex(ctx, [e.lngLat.lng, e.lngLat.lat], {
+    point: e.point,
+    excludeFeatureIds: [state.featureId]
+  });
+  const handle = snap ? [snap.lng, snap.lat] : [e.lngLat.lng, e.lngLat.lat];
+  const radius = distance(center, handle);
+  const handleBearing = initialBearing(center, handle);
+
+  state.feature.properties[Constants.properties.CIRCLE_RADIUS] = radius;
+  state.feature[Constants.properties.CIRCLE_HANDLE_BEARING] = handleBearing;
+  state.feature.changed();
 }
 
 DirectSelect.fireUpdate = function() {
@@ -136,6 +155,15 @@ DirectSelect.dragFeature = function(state, e, delta) {
 };
 
 DirectSelect.dragVertex = function(state, e, delta) {
+  if (isCircleFeature(state.feature)) {
+    if (state.selectedCoordPaths[0] === '0.1') {
+      updateCircleCoordinate(this, state, e);
+    } else {
+      this.dragFeature(state, e, delta);
+    }
+    return;
+  }
+
   const selectedCoords = state.selectedCoordPaths.map(coord_path => state.feature.getCoordinate(coord_path));
   const selectedCoordPoints = selectedCoords.map(coords => ({
     type: Constants.geojsonTypes.FEATURE,
@@ -230,8 +258,17 @@ DirectSelect.onStop = function() {
 };
 
 DirectSelect.toDisplayFeatures = function(state, geojson, push) {
+  const feature = this.getFeature(geojson.properties.id);
+
   if (state.featureId === geojson.properties.id) {
     geojson.properties.active = Constants.activeStates.ACTIVE;
+    if (isCircleFeature(state.feature)) {
+      createCircleDisplayFeatures(state.feature, geojson, {
+        selectedPaths: state.selectedCoordPaths
+      }).forEach(push);
+      this.fireActionable(state);
+      return;
+    }
     push(geojson);
     createSupplementaryPoints(geojson, {
       map: this.map,
@@ -240,6 +277,11 @@ DirectSelect.toDisplayFeatures = function(state, geojson, push) {
     }).forEach(push);
   } else {
     geojson.properties.active = Constants.activeStates.INACTIVE;
+    if (isCircleFeature(feature)) {
+      createCircleDisplayFeatures(feature, geojson).forEach(push);
+      this.fireActionable(state);
+      return;
+    }
     push(geojson);
   }
   this.fireActionable(state);

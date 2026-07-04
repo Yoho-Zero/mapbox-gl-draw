@@ -95,6 +95,7 @@ const showControls = {
   line_string: true,
   polygon: true,
   rectangle: true,
+  circle: true,
   trash: true,
   combine_features: true,
   uncombine_features: true
@@ -105,6 +106,7 @@ const hideControls = {
   line_string: false,
   polygon: false,
   rectangle: false,
+  circle: false,
   trash: false,
   combine_features: false,
   uncombine_features: false

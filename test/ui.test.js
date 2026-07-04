@@ -168,6 +168,7 @@ test('ui buttons with all options.controls, no attribution control', (t) => {
       point: true,
       polygon: true,
       rectangle: true,
+      circle: true,
       trash: true
     }
   });
@@ -177,7 +178,7 @@ test('ui buttons with all options.controls, no attribution control', (t) => {
   const controlGroup = testUi.addButtons();
   const buttons = getButtons(controlGroup);
 
-  t.equal(buttons.length, 5, 'five buttons added');
+  t.equal(buttons.length, 6, 'six buttons added');
 
   t.ok(buttons[0].classList.contains('mapbox-gl-draw_line'), 'first button has line class');
   t.ok(buttons[0].classList.contains('mapbox-gl-draw_ctrl-draw-btn'), 'first button has control class');
@@ -192,14 +193,18 @@ test('ui buttons with all options.controls, no attribution control', (t) => {
   t.ok(buttons[2].classList.contains('mapbox-gl-draw_ctrl-draw-btn'), 'third button has control class');
   t.equal(buttons[2].parentNode, controlGroup, 'third button is in controlGroup');
   const rectangleButton = buttons[2];
-  t.ok(buttons[3].classList.contains('mapbox-gl-draw_point'), 'fourth button has point class');
+  t.ok(buttons[3].classList.contains('mapbox-gl-draw_circle'), 'fourth button has circle class');
   t.ok(buttons[3].classList.contains('mapbox-gl-draw_ctrl-draw-btn'), 'fourth button has control class');
   t.equal(buttons[3].parentNode, controlGroup, 'fourth button is in controlGroup');
-  const pointButton = buttons[3];
-  t.ok(buttons[4].classList.contains('mapbox-gl-draw_trash'), 'fifth button has trash class');
+  const circleButton = buttons[3];
+  t.ok(buttons[4].classList.contains('mapbox-gl-draw_point'), 'fifth button has point class');
   t.ok(buttons[4].classList.contains('mapbox-gl-draw_ctrl-draw-btn'), 'fifth button has control class');
   t.equal(buttons[4].parentNode, controlGroup, 'fifth button is in controlGroup');
-  const trashButton = buttons[4];
+  const pointButton = buttons[4];
+  t.ok(buttons[5].classList.contains('mapbox-gl-draw_trash'), 'sixth button has trash class');
+  t.ok(buttons[5].classList.contains('mapbox-gl-draw_ctrl-draw-btn'), 'sixth button has control class');
+  t.equal(buttons[5].parentNode, controlGroup, 'sixth button is in controlGroup');
+  const trashButton = buttons[5];
 
   t.test('click line button', (st) => {
     lineButton.click();
@@ -207,6 +212,7 @@ test('ui buttons with all options.controls, no attribution control', (t) => {
     st.ok(lineButton.classList.contains('active'), 'line button is active');
     st.notOk(polygonButton.classList.contains('active'), 'polygon button is inactive');
     st.notOk(rectangleButton.classList.contains('active'), 'rectangle button is inactive');
+    st.notOk(circleButton.classList.contains('active'), 'circle button is inactive');
     st.notOk(pointButton.classList.contains('active'), 'point button is inactive');
     st.notOk(trashButton.classList.contains('active'), 'trash button is inactive');
 
@@ -223,6 +229,7 @@ test('ui buttons with all options.controls, no attribution control', (t) => {
     st.notOk(lineButton.classList.contains('active'), 'line button is inactive');
     st.ok(polygonButton.classList.contains('active'), 'polygon button is active');
     st.notOk(rectangleButton.classList.contains('active'), 'rectangle button is inactive');
+    st.notOk(circleButton.classList.contains('active'), 'circle button is inactive');
     st.notOk(pointButton.classList.contains('active'), 'point button is inactive');
     st.notOk(trashButton.classList.contains('active'), 'trash button is inactive');
 
@@ -239,11 +246,29 @@ test('ui buttons with all options.controls, no attribution control', (t) => {
     st.notOk(lineButton.classList.contains('active'), 'line button is inactive');
     st.notOk(polygonButton.classList.contains('active'), 'polygon button is inactive');
     st.ok(rectangleButton.classList.contains('active'), 'rectangle button is active');
+    st.notOk(circleButton.classList.contains('active'), 'circle button is inactive');
     st.notOk(pointButton.classList.contains('active'), 'point button is inactive');
     st.notOk(trashButton.classList.contains('active'), 'trash button is inactive');
 
     st.equal(context.events.changeMode.callCount, 1, 'changeMode called');
     st.deepEqual(context.events.changeMode.getCall(0).args, ['draw_rectangle'], 'with correct arguments');
+    context.events.changeMode.resetHistory();
+
+    st.end();
+  });
+
+  t.test('click circle button', (st) => {
+    circleButton.click();
+
+    st.notOk(lineButton.classList.contains('active'), 'line button is inactive');
+    st.notOk(polygonButton.classList.contains('active'), 'polygon button is inactive');
+    st.notOk(rectangleButton.classList.contains('active'), 'rectangle button is inactive');
+    st.ok(circleButton.classList.contains('active'), 'circle button is active');
+    st.notOk(pointButton.classList.contains('active'), 'point button is inactive');
+    st.notOk(trashButton.classList.contains('active'), 'trash button is inactive');
+
+    st.equal(context.events.changeMode.callCount, 1, 'changeMode called');
+    st.deepEqual(context.events.changeMode.getCall(0).args, ['draw_circle'], 'with correct arguments');
     context.events.changeMode.resetHistory();
 
     st.end();
@@ -255,6 +280,7 @@ test('ui buttons with all options.controls, no attribution control', (t) => {
     st.notOk(lineButton.classList.contains('active'), 'line button is inactive');
     st.notOk(polygonButton.classList.contains('active'), 'polygon button is inactive');
     st.notOk(rectangleButton.classList.contains('active'), 'rectangle button is inactive');
+    st.notOk(circleButton.classList.contains('active'), 'circle button is inactive');
     st.ok(pointButton.classList.contains('active'), 'point button is active');
     st.notOk(trashButton.classList.contains('active'), 'trash button is inactive');
     st.equal(context.events.changeMode.callCount, 0, 'changeMode not called');
@@ -264,6 +290,7 @@ test('ui buttons with all options.controls, no attribution control', (t) => {
     st.notOk(lineButton.classList.contains('active'), 'line button is inactive');
     st.notOk(polygonButton.classList.contains('active'), 'polygon button is inactive');
     st.notOk(rectangleButton.classList.contains('active'), 'rectangle button is inactive');
+    st.notOk(circleButton.classList.contains('active'), 'circle button is inactive');
     st.notOk(pointButton.classList.contains('active'), 'point button is inactive');
     st.notOk(trashButton.classList.contains('active'), 'trash button is inactive');
     st.equal(context.events.changeMode.callCount, 0, 'changeMode not called');
@@ -277,6 +304,7 @@ test('ui buttons with all options.controls, no attribution control', (t) => {
     st.notOk(lineButton.classList.contains('active'), 'line button is inactive');
     st.notOk(polygonButton.classList.contains('active'), 'polygon button is inactive');
     st.notOk(rectangleButton.classList.contains('active'), 'rectangle button is inactive');
+    st.notOk(circleButton.classList.contains('active'), 'circle button is inactive');
     st.notOk(pointButton.classList.contains('active'), 'point button is inactive');
     st.notOk(trashButton.classList.contains('active'), 'trash button is inactive');
 

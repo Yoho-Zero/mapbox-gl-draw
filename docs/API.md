@@ -32,7 +32,7 @@ All of the following options are optional.
 - `touchBuffer`, number (default: `25`): Number of pixels around any feature of vertex (in every direction) that will respond to a touch.
 - `vertexSnapping`, boolean (default: `true`): Whether or not to snap line and polygon drawing/editing vertices to nearby existing vertices.
 - `vertexSnappingDistance`, number (default: `10`): Pixel distance used when `vertexSnapping` is enabled.
-- `controls`, Object: Hide or show individual controls. Each property's name is a control, and value is a boolean indicating whether the control is on or off. Available control names are `point`, `line_string`, `polygon`, `rectangle`, `trash`, `combine_features` and `uncombine_features`. By default, all controls are on. To change that default, use `displayControlsDefault`.
+- `controls`, Object: Hide or show individual controls. Each property's name is a control, and value is a boolean indicating whether the control is on or off. Available control names are `point`, `line_string`, `polygon`, `rectangle`, `circle`, `trash`, `combine_features` and `uncombine_features`. By default, all controls are on. To change that default, use `displayControlsDefault`.
 - `displayControlsDefault`, boolean (default: `true`): The default value for `controls`. For example, if you would like all controls to be *off* by default, and specify an allowed list with `controls`, use `displayControlsDefault: false`.
 - `beforeId`, string: The id of an existing map layer before which Draw-managed layers should be inserted.
 - `styles`, Array\<Object\>: An array of map style objects. By default, Draw provides a map style for you. To learn about overriding styles, see the [Styling Draw](#styling-draw) section below.
@@ -85,6 +85,12 @@ Lets you draw a Polygon feature.
 `Draw.modes.DRAW_RECTANGLE === 'draw_rectangle'`
 
 Lets you draw a rectangular Polygon feature from two opposite corners. Created rectangle features include `draw_shape: 'rectangle'` in their properties so `direct_select` can preserve the rectangle shape while editing vertices.
+
+### `draw_circle`
+
+`Draw.modes.DRAW_CIRCLE === 'draw_circle'`
+
+Lets you draw a geodesic circular Polygon feature by pressing at the center, dragging to the desired radius, and releasing. Created circle features include `circleRadius` in their properties; the stored coordinates keep the center point and Draw expands the feature to a circular polygon while rendering.
 
 ### `draw_point`
 
@@ -518,7 +524,7 @@ The event data is an object with the following shape:
 
 Fired when the mode is changed. The following interactions will trigger this event:
 
-- Click the point, line, polygon, or rectangle buttons to begin drawing (enter a `draw_*` mode).
+- Click the point, line, polygon, rectangle, or circle buttons to begin drawing (enter a `draw_*` mode).
 - Finish drawing a feature (enter `simple_select` mode).
 - While in `simple_select` mode, click on an already selected feature (enter `direct_select` mode).
 - While in `direct_select` mode, click outside all features (enter `simple_select` mode).
@@ -576,7 +582,7 @@ property | values | function
 --- | --- | ---
 meta | feature, midpoint, vertex | `midpoint` and `vertex` are used on points added to the map to communicate polygon and line handles. `feature` is used for all features.
 active | true, false | A feature is active when it is 'selected' in the current mode. `true` and `false` are strings.
-mode |  simple_select, direct_select, draw_point, draw_line_string, draw_polygon, draw_rectangle | Indicates which mode Draw is currently in.
+mode |  simple_select, direct_select, draw_point, draw_line_string, draw_polygon, draw_rectangle, draw_circle | Indicates which mode Draw is currently in.
 
 Draw also provides a few more properties on features, but they should not be used for styling. For details on them, see "Using Draw with Mapbox GL JS's `queryRenderedFeatures`" below.
 

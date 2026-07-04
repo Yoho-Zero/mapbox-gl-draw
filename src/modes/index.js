@@ -5,6 +5,7 @@ import draw_point from './draw_point';
 import draw_polygon from './draw_polygon';
 import draw_line_string from './draw_line_string';
 import draw_rectangle from './draw_rectangle';
+import draw_circle from './draw_circle';
 
 export default {
   simple_select,
@@ -13,4 +14,5 @@ export default {
   draw_polygon,
   draw_line_string,
   draw_rectangle,
+  draw_circle,
 };

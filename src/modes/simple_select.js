@@ -5,6 +5,8 @@ import StringSet from '../lib/string_set';
 import doubleClickZoom from '../lib/double_click_zoom';
 import moveFeatures from '../lib/move_features';
 import * as Constants from '../constants';
+import { isCircleFeature } from '../lib/circle_geojson';
+import createCircleDisplayFeatures from '../lib/create_circle_display_features';
 
 const SimpleSelect = {};
 
@@ -293,6 +295,12 @@ SimpleSelect.onTouchEnd = SimpleSelect.onMouseUp = function(state, e) {
 SimpleSelect.toDisplayFeatures = function(state, geojson, display) {
   geojson.properties.active = (this.isSelected(geojson.properties.id)) ?
     Constants.activeStates.ACTIVE : Constants.activeStates.INACTIVE;
+  const feature = this.getFeature(geojson.properties.id);
+  if (isCircleFeature(feature)) {
+    createCircleDisplayFeatures(feature, geojson).forEach(display);
+    this.fireActionable();
+    return;
+  }
   display(geojson);
   this.fireActionable();
   if (geojson.properties.active !== Constants.activeStates.ACTIVE ||
